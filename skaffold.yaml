@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/vketest/gojgffo:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/vketest/gojgffo:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: gojgffo
+        chartPath: charts/gojgffo
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/vketest/gojgffo"
+          image.tag: "{{.DIGEST_HEX}}"
